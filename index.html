@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Google_Classroom_Logo.svg/1186px-Google_Classroom_Logo.svg.png" type="image/png">
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 100vh;
+			margin: 0;
+			background: #222;
+		}
+		.container {
+			text-align: center;
+		}
+		button {
+			margin: 10px;
+			padding: 12px 24px;
+			font-size: 16px;
+			cursor: pointer;
+			background: #4CAF50;
+			color: white;
+			border: none;
+			border-radius: 5px;
+			transition: background 0.3s;
+		}
+		button:hover {
+			background: #45a049;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<button onclick="openGame('https://cdn.jsdelivr.net/gh/a1pl/literate-tribble@main/pixel-18mini.html')">pixel</button>
+		<button onclick="openGame('https://cdn.jsdelivr.net/gh/gn-math/gn-math-DONTDMCA@main/singlefile.html?t=' + Date.now())">calculus</button>
+		<button onclick="openGame(['https://cdn.jsdelivr.net/gh/a1pl/literate-tribble@main/part1.txt', 'https://cdn.jsdelivr.net/gh/a1pl/literate-tribble@main/part2.txt'], true)">tuff</button>
+		<button onclick="openGame('https://cdn.jsdelivr.net/gh/a1pl/literate-tribble@main/singlefile.html')">geometry</button>
+		<button onclick="openGame('https://cdn.jsdelivr.net/gh/a1pl/literate-tribble@main/file.html')">trigonometry</button>
+	</div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+	<script>
+		function openGame(url, isMultipart) {
+			if (isMultipart) {
+				Promise.all([
+					fetch(url[0]).then(r => r.arrayBuffer()),
+					fetch(url[1]).then(r => r.arrayBuffer())
+				])
+				.then(([buf1, buf2]) => {
+					let combined = new Uint8Array(buf1.byteLength + buf2.byteLength)
+					combined.set(new Uint8Array(buf1), 0)
+					combined.set(new Uint8Array(buf2), buf1.byteLength)
+					let html = pako.inflate(combined, {to: 'string'})
+					let blob = new Blob([html], {type: 'text/html'})
+					let blobUrl = URL.createObjectURL(blob)
+					
+					var win = window.open('about:blank')
+					var iframe = win.document.createElement('iframe')
+					iframe.style.width = "100%"
+					iframe.style.height = "100%"
+					iframe.style.border = "none"
+					iframe.style.position = "fixed"
+					iframe.style.top = "0"
+					iframe.style.left = "0"
+					iframe.src = blobUrl
+					win.document.body.style.margin = "0"
+					win.document.body.appendChild(iframe)
+				})
+				.catch(e => alert('Failed to load: ' + e))
+			} else {
+				fetch(url)
+					.then(r => r.text())
+					.then(html => {
+						let blob = new Blob([html], {type: 'text/html'})
+						let blobUrl = URL.createObjectURL(blob)
+						
+						var win = window.open('about:blank')
+						var iframe = win.document.createElement('iframe')
+						iframe.style.width = "100%"
+						iframe.style.height = "100%"
+						iframe.style.border = "none"
+						iframe.style.position = "fixed"
+						iframe.style.top = "0"
+						iframe.style.left = "0"
+						iframe.src = blobUrl
+						win.document.body.style.margin = "0"
+						win.document.body.appendChild(iframe)
+					})
+					.catch(e => alert('Failed to load: ' + e))
+			}
+		}
+	</script>
+</body>
+</html>
