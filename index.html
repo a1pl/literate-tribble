@@ -44,14 +44,17 @@
 	<script>
 		function openGame(url, isMultipart) {
 			if (isMultipart) {
-				Promise.all([
-					fetch(url[0]).then(r => r.arrayBuffer()),
-					fetch(url[1]).then(r => r.arrayBuffer())
-				])
-				.then(([buf1, buf2]) => {
-					let combined = new Uint8Array(buf1.byteLength + buf2.byteLength)
-					combined.set(new Uint8Array(buf1), 0)
-					combined.set(new Uint8Array(buf2), buf1.byteLength)
+				Promise.all(url.map(u => fetch(u).then(r => r.arrayBuffer())))
+				.then((buffers) => {
+					const totalSize = buffers.reduce((sum, buf) => sum + buf.byteLength, 0);
+					
+					let combined = new Uint8Array(totalSize);
+					let offset = 0;
+					buffers.forEach(buf => {
+						combined.set(new Uint8Array(buf), offset);
+						offset += buf.byteLength;
+					});
+					
 					let html = pako.inflate(combined, {to: 'string'})
 					let blob = new Blob([html], {type: 'text/html'})
 					let blobUrl = URL.createObjectURL(blob)
